@@ -1163,10 +1163,9 @@ But how should we parse @a + b * c@? If we don't know the fixities of
 @+@ and @*@, we don't know whether to parse it as @a + (b * c)@ or @(a
 + b) * c@.
 
-In cases like this, use 'UInfixE' or 'UInfixP', which stand for
-\"unresolved infix expression\" and \"unresolved infix pattern\". When
-the compiler is given a splice containing a tree of @UInfixE@
-applications such as
+In cases like this, use 'UInfixE', 'UInfixP', or 'UInfixT', which stand for
+\"unresolved infix expression/pattern/type\", respectively. When the compiler
+is given a splice containing a tree of @UInfixE@ applications such as
 
 > UInfixE
 >   (UInfixE e1 op1 e2)
@@ -1206,8 +1205,9 @@ reassociate the tree as necessary.
 
     > [| a * b + c |] :: Q Exp
     > [p| a : b : c |] :: Q Pat
+    > [t| T + T |] :: Q Type
 
-    will never contain 'UInfixE', 'UInfixP', 'ParensE', or 'ParensP'
+    will never contain 'UInfixE', 'UInfixP', 'UInfixT', 'ParensE', or 'ParensP'
     constructors.
 
 -}
@@ -1468,6 +1468,9 @@ data Type = ForallT [TyVarBndr] Cxt Type  -- ^ @forall \<vars\>. \<ctxt\> -> \<t
           | VarT Name                     -- ^ @a@
           | ConT Name                     -- ^ @T@
           | PromotedT Name                -- ^ @'T@
+          | UInfixT Type Name Type        -- ^ @T + T@
+                                          --
+                                          -- See "Language.Haskell.TH.Syntax#infix"
 
           -- See Note [Representing concrete syntax in types]
           | TupleT Int                    -- ^ @(,), (,,), etc.@
