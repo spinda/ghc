@@ -634,7 +634,7 @@ tcRnHsBootDecls hsc_src decls
                    hs_defds  = def_decls,
                    hs_ruleds = rule_decls,
                    hs_vects  = vect_decls,
-                   hs_annds  = _,
+                   hs_annds  = annotation_decls,
                    hs_valds  = val_binds }) <- rnTopSrcDecls Nothing first_group
         -- The empty list is for extra dependencies coming from .hs-boot files
         -- See Note [Extra dependencies from .hs-boot files] in RnSource
@@ -660,6 +660,14 @@ tcRnHsBootDecls hsc_src decls
         ; traceTc "Tc5" empty
         ; val_ids <- tcHsBootSigs val_binds
 
+                -- Annotations
+        ; annotations <- tcAnnotations annotation_decls
+        ; updGblEnv ( \ gbl ->
+            gbl {
+              tcg_anns    = tcg_anns gbl ++ annotations,
+              tcg_ann_env = extendAnnEnvList (tcg_ann_env tcg_env) annotations
+            }) $ do {
+
                 -- Wrap up
                 -- No simplification or zonking to do
         ; traceTc "Tc7a" empty
@@ -678,7 +686,7 @@ tcRnHsBootDecls hsc_src decls
               }
 
         ; setGlobalTypeEnv gbl_env type_env2
-   }}
+   }}}
    ; traceTc "boot" (ppr lie); return gbl_env }
 
 badBootDecl :: HscSource -> String -> Located decl -> TcM ()
