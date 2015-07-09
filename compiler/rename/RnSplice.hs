@@ -178,7 +178,7 @@ rnTopSpliceDecls :: HsSplice RdrName -> RnM ([LHsDecl RdrName], FreeVars)
 rnTopSpliceDecls e = failTH e "Template Haskell top splice"
 
 rnSpliceType :: HsSplice RdrName -> PostTc Name Kind
-             -> RnM (HsType Name, FreeVars)
+             -> RnM (Either (HsType RdrName) (HsType Name), FreeVars)
 rnSpliceType e _ = failTH e "Template Haskell type splice"
 
 rnSpliceExpr :: HsSplice RdrName -> RnM (HsExpr Name, FreeVars)
@@ -410,19 +410,16 @@ rnSpliceExpr splice
 
 ----------------------
 rnSpliceType :: HsSplice RdrName -> PostTc Name Kind
-             -> RnM (HsType Name, FreeVars)
+             -> RnM (Either (HsType RdrName) (HsType Name), FreeVars)
 rnSpliceType splice k
   = rnSpliceGen run_type_splice pend_type_splice splice
   where
     pend_type_splice rn_splice
-       = (makePending UntypedTypeSplice rn_splice, HsSpliceTy rn_splice k)
+       = (makePending UntypedTypeSplice rn_splice, Right (HsSpliceTy rn_splice k))
 
     run_type_splice rn_splice
-      = do { hs_ty2 <- runRnSplice UntypedTypeSplice runMetaT ppr rn_splice
-           ; (hs_ty3, fvs) <- do { let doc = SpliceTypeCtx hs_ty2
-                                 ; checkNoErrs $ rnLHsType doc hs_ty2 }
-                                    -- checkNoErrs: see Note [Renamer errors]
-           ; return (HsParTy hs_ty3, fvs) }
+      = do { ty <- runRnSplice UntypedTypeSplice runMetaT ppr rn_splice
+           ; return (Left (HsParTy ty), emptyFVs) }
               -- Wrap the result of the splice in parens so that we don't
               -- lose the outermost location set by runQuasiQuote (#7918)
 
