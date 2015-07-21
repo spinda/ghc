@@ -136,6 +136,14 @@
                     Partial type signatures can now be used in splices, see <xref linkend="pts-where"/>.
                 </para>
             </listitem>
+            <listitem>
+                <para>
+                    <literal>Template Haskell</literal> now supports the use of
+                    <literal>UInfixT</literal> in types to resolve infix
+                    operator fixities, in the same vein as UInfixP and
+                    UInfixE in patterns and expressions.
+                </para>
+            </listitem>
        </itemizedlist>
     </sect3>
 
