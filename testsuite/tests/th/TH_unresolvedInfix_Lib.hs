@@ -90,5 +90,5 @@ tyTimes = mkName "*"
 
 a $+? b = uInfixT a tyPlus b
 a $*? b = uInfixT a tyTimes b
-a $+! b = conT tyPlus `appT` a `appT` b
-a $*! b = conT tyTimes `appT` a `appT` b
+a $+! b = infixT a tyPlus b
+a $*! b = infixT a tyTimes b

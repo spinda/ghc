@@ -1046,10 +1046,22 @@ cvtTypeKind ty_str ty
            WildCardT (Just nm)
              -> do { nm' <- tName nm; mk_apps (mkNamedWildCardTy nm') tys' }
 
+           InfixT t1 s t2
+             -> do { s'  <- tconName s
+                   ; t1' <- cvtType t1
+                   ; t2' <- cvtType t2
+                   ; mk_apps (HsTyVar s') [t1', t2']
+                   }
+
            UInfixT t1 s t2
              -> do { t2' <- cvtType t2
                    ; cvtOpAppT t1 s t2'
                    } -- Note [Converting UInfix]
+
+           ParensT t
+             -> do { t' <- cvtType t
+                   ; returnL $ HsParTy t'
+                   }
 
            PromotedT nm -> do { nm' <- cName nm; mk_apps (HsTyVar nm') tys' }
                  -- Promoted data constructor; hence cName

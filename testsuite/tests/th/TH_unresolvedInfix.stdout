@@ -46,4 +46,5 @@ N :+ (N :+ N :+ N)
 (N)
 N :+ (N :+ N :+ N)
 (N)
-(Int + Int + Int)
+(Int + (Int + Int + Int))
+Int

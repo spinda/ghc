@@ -501,7 +501,9 @@ pprParendType StarT               = char '*'
 pprParendType ConstraintT         = text "Constraint"
 pprParendType (SigT ty k)         = parens (ppr ty <+> text "::" <+> ppr k)
 pprParendType (WildCardT mbName)  = char '_' <> maybe empty ppr mbName
+pprParendType (InfixT x n y)      = parens (ppr x <+> pprName' Infix n <+> ppr y)
 pprParendType t@(UInfixT {})      = parens (pprUInfixT t)
+pprParendType (ParensT t)         = ppr t
 pprParendType other               = parens (ppr other)
 
 pprUInfixT :: Type -> Doc

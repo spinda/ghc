@@ -109,6 +109,10 @@ _t9  = ((1 `Plus` 1) `Times` 1) `Plus` 1 :: $( (int $+! int) $*? (int $+? int) )
 _t10 = 1 `Plus` (1 `Times` (1 `Plus` 1)) :: $( (int $+? int) $*? (int $+! int) )
 _t11 = (1 `Plus` 1) `Times` (1 `Plus` 1) :: $( (int $+? int) $*! (int $+! int) )
 _t12 = (1 `Plus` 1) `Times` (1 `Plus` 1) :: $( (int $+? int) $*! (int $+? int) )
+-------------- Parens
+_t13 = (1 `Plus` (1 `Times` 1)) `Plus` (1 `Times` 1) :: $( ((parensT ((int $+? int) $*? int)) $+? int) $*? int )
+_t14 = (1 `Plus` 1) `Times` (1 `Plus` 1)             :: $( (parensT (int $+? int)) $*? (parensT (int $+? int)) )
+_t15 = (1 `Plus` (1 `Times` 1)) `Plus` 1             :: $( parensT ((int $+? int) $*? (int $+? int)) )
 
 main = do
   mapM_ print exprs
@@ -124,11 +128,13 @@ main = do
   -- pretty-printing of unresolved infix expressions
   let ne = ConE $ mkName "N"
       np = ConP (mkName "N") []
-      nint = ConT (mkName "Int")
+      nt = ConT (mkName "Int")
       plusE = ConE (mkName ":+")
       plusP = (mkName ":+")
+      plusT = (mkName "+")
   putStrLn $ pprint (InfixE (Just ne) plusE (Just $ UInfixE ne plusE (UInfixE ne plusE ne)))
   putStrLn $ pprint (ParensE ne)
   putStrLn $ pprint (InfixP np plusP (UInfixP np plusP (UInfixP np plusP np)))
   putStrLn $ pprint (ParensP np)
-  putStrLn $ pprint (UInfixT nint tyPlus (UInfixT nint tyPlus nint))
+  putStrLn $ pprint (InfixT nt plusT (UInfixT nt plusT (UInfixT nt plusT nt)))
+  putStrLn $ pprint (ParensT nt)
