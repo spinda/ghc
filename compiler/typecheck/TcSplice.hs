@@ -107,6 +107,7 @@ import qualified Language.Haskell.TH.Syntax as TH
 -- Because GHC.Desugar might not be in the base library of the bootstrapping compiler
 import GHC.Desugar      ( AnnotationWrapper(..) )
 
+import qualified Data.IntSet as IntSet
 import qualified Data.Map as Map
 import Data.Dynamic  ( fromDynamic, toDyn )
 import Data.Typeable ( typeOf, Typeable )
@@ -850,6 +851,13 @@ instance TH.Quasi (IOEnv (Env TcGblEnv TcLclEnv)) where
       th_state_var <- fmap tcg_th_state getGblEnv
       updTcRef th_state_var (\m -> Map.insert (typeOf x) (toDyn x) m)
 
+  qIsExtEnabled = xoptM . th_from_ext
+
+  qExtsEnabled = do
+    dflags <- hsc_dflags <$> getTopEnv
+    let flags = map toEnum $ IntSet.elems $ extensionFlags dflags
+    return $ map th_to_ext flags
+
 
 {-
 ************************************************************************
@@ -1564,5 +1572,203 @@ will appear in TH syntax like this
   data T a = forall b. (a ~ [b]) => MkT1 b
            | (a ~ Int) => MkT2
 -}
+
+------------------------------
+th_from_ext :: TH.Extension -> ExtensionFlag
+th_from_ext TH.Cpp = Opt_Cpp
+th_from_ext TH.OverlappingInstances = Opt_OverlappingInstances
+th_from_ext TH.UndecidableInstances = Opt_UndecidableInstances
+th_from_ext TH.IncoherentInstances = Opt_IncoherentInstances
+th_from_ext TH.MonomorphismRestriction = Opt_MonomorphismRestriction
+th_from_ext TH.MonoPatBinds = Opt_MonoPatBinds
+th_from_ext TH.MonoLocalBinds = Opt_MonoLocalBinds
+th_from_ext TH.RelaxedPolyRec = Opt_RelaxedPolyRec
+th_from_ext TH.ExtendedDefaultRules = Opt_ExtendedDefaultRules
+th_from_ext TH.ForeignFunctionInterface = Opt_ForeignFunctionInterface
+th_from_ext TH.UnliftedFFITypes = Opt_UnliftedFFITypes
+th_from_ext TH.InterruptibleFFI = Opt_InterruptibleFFI
+th_from_ext TH.CApiFFI = Opt_CApiFFI
+th_from_ext TH.GHCForeignImportPrim = Opt_GHCForeignImportPrim
+th_from_ext TH.JavaScriptFFI = Opt_JavaScriptFFI
+th_from_ext TH.ParallelArrays = Opt_ParallelArrays
+th_from_ext TH.Arrows = Opt_Arrows
+th_from_ext TH.TemplateHaskell = Opt_TemplateHaskell
+th_from_ext TH.QuasiQuotes = Opt_QuasiQuotes
+th_from_ext TH.ImplicitParams = Opt_ImplicitParams
+th_from_ext TH.ImplicitPrelude = Opt_ImplicitPrelude
+th_from_ext TH.ScopedTypeVariables = Opt_ScopedTypeVariables
+th_from_ext TH.AllowAmbiguousTypes = Opt_AllowAmbiguousTypes
+th_from_ext TH.UnboxedTuples = Opt_UnboxedTuples
+th_from_ext TH.BangPatterns = Opt_BangPatterns
+th_from_ext TH.TypeFamilies = Opt_TypeFamilies
+th_from_ext TH.OverloadedStrings = Opt_OverloadedStrings
+th_from_ext TH.OverloadedLists = Opt_OverloadedLists
+th_from_ext TH.NumDecimals = Opt_NumDecimals
+th_from_ext TH.DisambiguateRecordFields = Opt_DisambiguateRecordFields
+th_from_ext TH.RecordWildCards = Opt_RecordWildCards
+th_from_ext TH.RecordPuns = Opt_RecordPuns
+th_from_ext TH.ViewPatterns = Opt_ViewPatterns
+th_from_ext TH.GADTs = Opt_GADTs
+th_from_ext TH.GADTSyntax = Opt_GADTSyntax
+th_from_ext TH.NPlusKPatterns = Opt_NPlusKPatterns
+th_from_ext TH.DoAndIfThenElse = Opt_DoAndIfThenElse
+th_from_ext TH.RebindableSyntax = Opt_RebindableSyntax
+th_from_ext TH.ConstraintKinds = Opt_ConstraintKinds
+th_from_ext TH.PolyKinds = Opt_PolyKinds
+th_from_ext TH.DataKinds = Opt_DataKinds
+th_from_ext TH.InstanceSigs = Opt_InstanceSigs
+th_from_ext TH.StandaloneDeriving = Opt_StandaloneDeriving
+th_from_ext TH.DeriveDataTypeable = Opt_DeriveDataTypeable
+th_from_ext TH.AutoDeriveTypeable = Opt_AutoDeriveTypeable
+th_from_ext TH.DeriveFunctor = Opt_DeriveFunctor
+th_from_ext TH.DeriveTraversable = Opt_DeriveTraversable
+th_from_ext TH.DeriveFoldable = Opt_DeriveFoldable
+th_from_ext TH.DeriveGeneric = Opt_DeriveGeneric
+th_from_ext TH.DefaultSignatures = Opt_DefaultSignatures
+th_from_ext TH.DeriveAnyClass = Opt_DeriveAnyClass
+th_from_ext TH.TypeSynonymInstances = Opt_TypeSynonymInstances
+th_from_ext TH.FlexibleContexts = Opt_FlexibleContexts
+th_from_ext TH.FlexibleInstances = Opt_FlexibleInstances
+th_from_ext TH.ConstrainedClassMethods = Opt_ConstrainedClassMethods
+th_from_ext TH.MultiParamTypeClasses = Opt_MultiParamTypeClasses
+th_from_ext TH.NullaryTypeClasses = Opt_NullaryTypeClasses
+th_from_ext TH.FunctionalDependencies = Opt_FunctionalDependencies
+th_from_ext TH.UnicodeSyntax = Opt_UnicodeSyntax
+th_from_ext TH.ExistentialQuantification = Opt_ExistentialQuantification
+th_from_ext TH.MagicHash = Opt_MagicHash
+th_from_ext TH.EmptyDataDecls = Opt_EmptyDataDecls
+th_from_ext TH.KindSignatures = Opt_KindSignatures
+th_from_ext TH.RoleAnnotations = Opt_RoleAnnotations
+th_from_ext TH.ParallelListComp = Opt_ParallelListComp
+th_from_ext TH.TransformListComp = Opt_TransformListComp
+th_from_ext TH.MonadComprehensions = Opt_MonadComprehensions
+th_from_ext TH.GeneralizedNewtypeDeriving = Opt_GeneralizedNewtypeDeriving
+th_from_ext TH.RecursiveDo = Opt_RecursiveDo
+th_from_ext TH.PostfixOperators = Opt_PostfixOperators
+th_from_ext TH.TupleSections = Opt_TupleSections
+th_from_ext TH.PatternGuards = Opt_PatternGuards
+th_from_ext TH.LiberalTypeSynonyms = Opt_LiberalTypeSynonyms
+th_from_ext TH.RankNTypes = Opt_RankNTypes
+th_from_ext TH.ImpredicativeTypes = Opt_ImpredicativeTypes
+th_from_ext TH.TypeOperators = Opt_TypeOperators
+th_from_ext TH.ExplicitNamespaces = Opt_ExplicitNamespaces
+th_from_ext TH.PackageImports = Opt_PackageImports
+th_from_ext TH.ExplicitForAll = Opt_ExplicitForAll
+th_from_ext TH.AlternativeLayoutRule = Opt_AlternativeLayoutRule
+th_from_ext TH.AlternativeLayoutRuleTransitional = Opt_AlternativeLayoutRuleTransitional
+th_from_ext TH.DatatypeContexts = Opt_DatatypeContexts
+th_from_ext TH.NondecreasingIndentation = Opt_NondecreasingIndentation
+th_from_ext TH.RelaxedLayout = Opt_RelaxedLayout
+th_from_ext TH.TraditionalRecordSyntax = Opt_TraditionalRecordSyntax
+th_from_ext TH.LambdaCase = Opt_LambdaCase
+th_from_ext TH.MultiWayIf = Opt_MultiWayIf
+th_from_ext TH.BinaryLiterals = Opt_BinaryLiterals
+th_from_ext TH.NegativeLiterals = Opt_NegativeLiterals
+th_from_ext TH.EmptyCase = Opt_EmptyCase
+th_from_ext TH.PatternSynonyms = Opt_PatternSynonyms
+th_from_ext TH.PartialTypeSignatures = Opt_PartialTypeSignatures
+th_from_ext TH.NamedWildCards = Opt_NamedWildCards
+th_from_ext TH.StaticPointers = Opt_StaticPointers
+th_from_ext TH.StrictData = Opt_StrictData
+
+
+------------------------------
+th_to_ext :: ExtensionFlag -> TH.Extension
+th_to_ext Opt_Cpp = TH.Cpp
+th_to_ext Opt_OverlappingInstances = TH.OverlappingInstances
+th_to_ext Opt_UndecidableInstances = TH.UndecidableInstances
+th_to_ext Opt_IncoherentInstances = TH.IncoherentInstances
+th_to_ext Opt_MonomorphismRestriction = TH.MonomorphismRestriction
+th_to_ext Opt_MonoPatBinds = TH.MonoPatBinds
+th_to_ext Opt_MonoLocalBinds = TH.MonoLocalBinds
+th_to_ext Opt_RelaxedPolyRec = TH.RelaxedPolyRec
+th_to_ext Opt_ExtendedDefaultRules = TH.ExtendedDefaultRules
+th_to_ext Opt_ForeignFunctionInterface = TH.ForeignFunctionInterface
+th_to_ext Opt_UnliftedFFITypes = TH.UnliftedFFITypes
+th_to_ext Opt_InterruptibleFFI = TH.InterruptibleFFI
+th_to_ext Opt_CApiFFI = TH.CApiFFI
+th_to_ext Opt_GHCForeignImportPrim = TH.GHCForeignImportPrim
+th_to_ext Opt_JavaScriptFFI = TH.JavaScriptFFI
+th_to_ext Opt_ParallelArrays = TH.ParallelArrays
+th_to_ext Opt_Arrows = TH.Arrows
+th_to_ext Opt_TemplateHaskell = TH.TemplateHaskell
+th_to_ext Opt_QuasiQuotes = TH.QuasiQuotes
+th_to_ext Opt_ImplicitParams = TH.ImplicitParams
+th_to_ext Opt_ImplicitPrelude = TH.ImplicitPrelude
+th_to_ext Opt_ScopedTypeVariables = TH.ScopedTypeVariables
+th_to_ext Opt_AllowAmbiguousTypes = TH.AllowAmbiguousTypes
+th_to_ext Opt_UnboxedTuples = TH.UnboxedTuples
+th_to_ext Opt_BangPatterns = TH.BangPatterns
+th_to_ext Opt_TypeFamilies = TH.TypeFamilies
+th_to_ext Opt_OverloadedStrings = TH.OverloadedStrings
+th_to_ext Opt_OverloadedLists = TH.OverloadedLists
+th_to_ext Opt_NumDecimals = TH.NumDecimals
+th_to_ext Opt_DisambiguateRecordFields = TH.DisambiguateRecordFields
+th_to_ext Opt_RecordWildCards = TH.RecordWildCards
+th_to_ext Opt_RecordPuns = TH.RecordPuns
+th_to_ext Opt_ViewPatterns = TH.ViewPatterns
+th_to_ext Opt_GADTs = TH.GADTs
+th_to_ext Opt_GADTSyntax = TH.GADTSyntax
+th_to_ext Opt_NPlusKPatterns = TH.NPlusKPatterns
+th_to_ext Opt_DoAndIfThenElse = TH.DoAndIfThenElse
+th_to_ext Opt_RebindableSyntax = TH.RebindableSyntax
+th_to_ext Opt_ConstraintKinds = TH.ConstraintKinds
+th_to_ext Opt_PolyKinds = TH.PolyKinds
+th_to_ext Opt_DataKinds = TH.DataKinds
+th_to_ext Opt_InstanceSigs = TH.InstanceSigs
+th_to_ext Opt_StandaloneDeriving = TH.StandaloneDeriving
+th_to_ext Opt_DeriveDataTypeable = TH.DeriveDataTypeable
+th_to_ext Opt_AutoDeriveTypeable = TH.AutoDeriveTypeable
+th_to_ext Opt_DeriveFunctor = TH.DeriveFunctor
+th_to_ext Opt_DeriveTraversable = TH.DeriveTraversable
+th_to_ext Opt_DeriveFoldable = TH.DeriveFoldable
+th_to_ext Opt_DeriveGeneric = TH.DeriveGeneric
+th_to_ext Opt_DefaultSignatures = TH.DefaultSignatures
+th_to_ext Opt_DeriveAnyClass = TH.DeriveAnyClass
+th_to_ext Opt_TypeSynonymInstances = TH.TypeSynonymInstances
+th_to_ext Opt_FlexibleContexts = TH.FlexibleContexts
+th_to_ext Opt_FlexibleInstances = TH.FlexibleInstances
+th_to_ext Opt_ConstrainedClassMethods = TH.ConstrainedClassMethods
+th_to_ext Opt_MultiParamTypeClasses = TH.MultiParamTypeClasses
+th_to_ext Opt_NullaryTypeClasses = TH.NullaryTypeClasses
+th_to_ext Opt_FunctionalDependencies = TH.FunctionalDependencies
+th_to_ext Opt_UnicodeSyntax = TH.UnicodeSyntax
+th_to_ext Opt_ExistentialQuantification = TH.ExistentialQuantification
+th_to_ext Opt_MagicHash = TH.MagicHash
+th_to_ext Opt_EmptyDataDecls = TH.EmptyDataDecls
+th_to_ext Opt_KindSignatures = TH.KindSignatures
+th_to_ext Opt_RoleAnnotations = TH.RoleAnnotations
+th_to_ext Opt_ParallelListComp = TH.ParallelListComp
+th_to_ext Opt_TransformListComp = TH.TransformListComp
+th_to_ext Opt_MonadComprehensions = TH.MonadComprehensions
+th_to_ext Opt_GeneralizedNewtypeDeriving = TH.GeneralizedNewtypeDeriving
+th_to_ext Opt_RecursiveDo = TH.RecursiveDo
+th_to_ext Opt_PostfixOperators = TH.PostfixOperators
+th_to_ext Opt_TupleSections = TH.TupleSections
+th_to_ext Opt_PatternGuards = TH.PatternGuards
+th_to_ext Opt_LiberalTypeSynonyms = TH.LiberalTypeSynonyms
+th_to_ext Opt_RankNTypes = TH.RankNTypes
+th_to_ext Opt_ImpredicativeTypes = TH.ImpredicativeTypes
+th_to_ext Opt_TypeOperators = TH.TypeOperators
+th_to_ext Opt_ExplicitNamespaces = TH.ExplicitNamespaces
+th_to_ext Opt_PackageImports = TH.PackageImports
+th_to_ext Opt_ExplicitForAll = TH.ExplicitForAll
+th_to_ext Opt_AlternativeLayoutRule = TH.AlternativeLayoutRule
+th_to_ext Opt_AlternativeLayoutRuleTransitional = TH.AlternativeLayoutRuleTransitional
+th_to_ext Opt_DatatypeContexts = TH.DatatypeContexts
+th_to_ext Opt_NondecreasingIndentation = TH.NondecreasingIndentation
+th_to_ext Opt_RelaxedLayout = TH.RelaxedLayout
+th_to_ext Opt_TraditionalRecordSyntax = TH.TraditionalRecordSyntax
+th_to_ext Opt_LambdaCase = TH.LambdaCase
+th_to_ext Opt_MultiWayIf = TH.MultiWayIf
+th_to_ext Opt_BinaryLiterals = TH.BinaryLiterals
+th_to_ext Opt_NegativeLiterals = TH.NegativeLiterals
+th_to_ext Opt_EmptyCase = TH.EmptyCase
+th_to_ext Opt_PatternSynonyms = TH.PatternSynonyms
+th_to_ext Opt_PartialTypeSignatures = TH.PartialTypeSignatures
+th_to_ext Opt_NamedWildCards = TH.NamedWildCards
+th_to_ext Opt_StaticPointers = TH.StaticPointers
+th_to_ext Opt_StrictData = TH.StrictData
+
 
 #endif  /* GHCI */

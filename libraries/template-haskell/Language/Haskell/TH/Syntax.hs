@@ -89,6 +89,9 @@ class (Applicative m, Monad m) => Quasi m where
 
   qPutQ :: Typeable a => a -> m ()
 
+  qIsExtEnabled :: Extension -> m Bool
+  qExtsEnabled  :: m [Extension]
+
 -----------------------------------------------------
 --      The IO instance of Quasi
 --
@@ -122,6 +125,8 @@ instance Quasi IO where
   qAddModFinalizer _  = badIO "addModFinalizer"
   qGetQ               = badIO "getQ"
   qPutQ _             = badIO "putQ"
+  qIsExtEnabled _     = badIO "isExtEnabled"
+  qExtsEnabled        = badIO "extsEnabled"
 
   qRunIO m = m
 
@@ -430,6 +435,13 @@ getQ = Q qGetQ
 putQ :: Typeable a => a -> Q ()
 putQ x = Q (qPutQ x)
 
+-- | Test whether a language extension is enabled.
+isExtEnabled :: Extension -> Q Bool
+isExtEnabled ext = Q (qIsExtEnabled ext)
+
+extsEnabled :: Q [Extension]
+extsEnabled = Q qExtsEnabled
+
 instance Quasi Q where
   qNewName          = newName
   qReport           = report
@@ -448,6 +460,8 @@ instance Quasi Q where
   qAddModFinalizer  = addModFinalizer
   qGetQ             = getQ
   qPutQ             = putQ
+  qIsExtEnabled     = isExtEnabled
+  qExtsEnabled      = extsEnabled
 
 
 ----------------------------------------------------
@@ -1548,6 +1562,112 @@ constructors):
   '[ Maybe, IO ]    PromotedConsT `AppT` Maybe `AppT`
                     (PromotedConsT  `AppT` IO `AppT` PromotedNilT)
 -}
+
+-----------------------------------------------------
+--
+--              Language Extensions
+--
+-----------------------------------------------------
+
+data Extension
+   = Cpp
+   | OverlappingInstances
+   | UndecidableInstances
+   | IncoherentInstances
+   | MonomorphismRestriction
+   | MonoPatBinds
+   | MonoLocalBinds
+   | RelaxedPolyRec
+   | ExtendedDefaultRules
+   | ForeignFunctionInterface
+   | UnliftedFFITypes
+   | InterruptibleFFI
+   | CApiFFI
+   | GHCForeignImportPrim
+   | JavaScriptFFI
+   | ParallelArrays
+   | Arrows
+   | TemplateHaskell
+   | QuasiQuotes
+   | ImplicitParams
+   | ImplicitPrelude
+   | ScopedTypeVariables
+   | AllowAmbiguousTypes
+   | UnboxedTuples
+   | BangPatterns
+   | TypeFamilies
+   | OverloadedStrings
+   | OverloadedLists
+   | NumDecimals
+   | DisambiguateRecordFields
+   | RecordWildCards
+   | RecordPuns
+   | ViewPatterns
+   | GADTs
+   | GADTSyntax
+   | NPlusKPatterns
+   | DoAndIfThenElse
+   | RebindableSyntax
+   | ConstraintKinds
+   | PolyKinds
+   | DataKinds
+   | InstanceSigs
+
+   | StandaloneDeriving
+   | DeriveDataTypeable
+   | AutoDeriveTypeable
+   | DeriveFunctor
+   | DeriveTraversable
+   | DeriveFoldable
+   | DeriveGeneric
+   | DefaultSignatures
+   | DeriveAnyClass
+
+   | TypeSynonymInstances
+   | FlexibleContexts
+   | FlexibleInstances
+   | ConstrainedClassMethods
+   | MultiParamTypeClasses
+   | NullaryTypeClasses
+   | FunctionalDependencies
+   | UnicodeSyntax
+   | ExistentialQuantification
+   | MagicHash
+   | EmptyDataDecls
+   | KindSignatures
+   | RoleAnnotations
+   | ParallelListComp
+   | TransformListComp
+   | MonadComprehensions
+   | GeneralizedNewtypeDeriving
+   | RecursiveDo
+   | PostfixOperators
+   | TupleSections
+   | PatternGuards
+   | LiberalTypeSynonyms
+   | RankNTypes
+   | ImpredicativeTypes
+   | TypeOperators
+   | ExplicitNamespaces
+   | PackageImports
+   | ExplicitForAll
+   | AlternativeLayoutRule
+   | AlternativeLayoutRuleTransitional
+   | DatatypeContexts
+   | NondecreasingIndentation
+   | RelaxedLayout
+   | TraditionalRecordSyntax
+   | LambdaCase
+   | MultiWayIf
+   | BinaryLiterals
+   | NegativeLiterals
+   | EmptyCase
+   | PatternSynonyms
+   | PartialTypeSignatures
+   | NamedWildCards
+   | StaticPointers
+   | StrictData
+   deriving (Eq, Enum, Show)
 
 -----------------------------------------------------
 --              Internal helper functions

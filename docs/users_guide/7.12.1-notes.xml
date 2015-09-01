@@ -188,6 +188,13 @@
                      char literals.
                 </para>
             </listitem>
+             <listitem>
+                 <para>
+                     <literal>isExtEnabled</literal> can now be used to
+                     determine whether a language extension is enabled
+                     in the <literal>Q</literal> monad.
+                </para>
+            </listitem>
        </itemizedlist>
     </sect3>
 
