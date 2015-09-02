@@ -188,6 +188,13 @@
                      char literals.
                 </para>
             </listitem>
+             <listitem>
+                 <para>
+                     The representation of data, newtype, data instance, and
+                     newtype instance declarations has been change to allow for
+                     multi-parameter type classes in the deriving clause.
+                </para>
+            </listitem>
        </itemizedlist>
     </sect3>
 

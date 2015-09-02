@@ -351,3 +351,7 @@ test('T10704',
      extra_clean(['T10704a.o','T10704a.hi']),
      multimod_compile_and_run,
      ['T10704', '-v0'])
+test('T10819',
+     extra_clean(['T10819_Lib.hi', 'T10819_Lib.o']),
+     multimod_compile,
+     ['T10819.hs', '-v0 ' + config.ghc_th_way_flags])
